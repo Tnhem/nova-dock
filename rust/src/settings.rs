@@ -3,7 +3,7 @@
 //! page / pause buttons are sent back on stdout.
 
 use crate::config::{self, Config, PAGES};
-use crate::text::FONTS;
+use crate::text::fonts;
 use crate::tray::{autostart_enabled, clip_label, icon_rgba, set_autostart, PAGE_NAMES};
 use crate::viz::STYLES;
 use eframe::egui::{self, Color32, ColorImage, TextureHandle, TextureOptions};
@@ -219,7 +219,7 @@ impl eframe::App for App {
                     }
                     ui.end_row();
                     ui.label("Font");
-                    let opts: Vec<(String, String)> = FONTS.iter().map(|f| (f.0.to_string(), f.3.to_string())).collect();
+                    let opts: Vec<(String, String)> = fonts().iter().map(|f| (f.key.clone(), f.label.clone())).collect();
                     if let Some(v) = combo(ui, "font", &cfg.font, &opts, 240.0) {
                         set("font", v);
                     }

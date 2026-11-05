@@ -127,7 +127,7 @@ pub fn load(prev: Option<&Config>) -> Config {
     if !["fill", "fit", "stretch"].contains(&cfg.clip_fit.as_str()) {
         cfg.clip_fit = "fill".into();
     }
-    if !crate::text::FONTS.iter().any(|f| f.0 == cfg.font) {
+    if !crate::text::fonts().iter().any(|f| f.key == cfg.font) {
         cfg.font = "pixel-operator".into();
     }
     cfg.brightness = cfg.brightness.clamp(1, 10);

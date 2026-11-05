@@ -5,9 +5,10 @@ use ab_glyph::{point, Font, FontVec, GlyphId, PxScale, ScaleFont};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::Path;
+use std::sync::OnceLock;
 
-/// name -> (file in fonts/, pixel size where it lands on the pixel grid, label).
-pub const FONTS: &[(&str, &str, f32, &str)] = &[
+/// Built-in fonts: name -> (file in fonts/, pixel size where it lands on the pixel grid, label).
+pub const BUILTIN: &[(&str, &str, f32, &str)] = &[
     ("pixel-operator", "PixelOperator.ttf", 16.0, "Pixel Operator"),
     ("minecraft", "Monocraft.ttf", 9.0, "Minecraft (Monocraft)"),
     ("minecraft-large", "Monocraft.ttf", 18.0, "Minecraft large"),
@@ -15,6 +16,61 @@ pub const FONTS: &[(&str, &str, f32, &str)] = &[
     ("silkscreen", "Silkscreen-Regular.ttf", 8.0, "Silkscreen (tiny caps)"),
     ("unifont", "Unifont.otf", 16.0, "Unifont (also Chinese)"),
 ];
+
+pub struct FontDef {
+    pub key: String,
+    pub file: String,
+    pub size: f32,
+    pub label: String,
+}
+
+/// Built-in fonts plus user fonts from fonts/, read once at startup:
+/// - `fonts/fonts.json`: `[{"file": "x.ttf", "size": 12, "name": "x", "label": "X"}]` (name/label optional)
+/// - any `Name@12.ttf` / `Name@12.otf`: the number after @ is the pixel size
+pub fn fonts() -> &'static [FontDef] {
+    static ALL: OnceLock<Vec<FontDef>> = OnceLock::new();
+    ALL.get_or_init(|| {
+        let mut all: Vec<FontDef> = BUILTIN
+            .iter()
+            .map(|&(key, file, size, label)| FontDef { key: key.into(), file: file.into(), size, label: label.into() })
+            .collect();
+        let dir = crate::config::data_dir().join("fonts");
+        let slug = |s: &str| s.to_lowercase().split(|c: char| !c.is_alphanumeric()).filter(|w| !w.is_empty()).collect::<Vec<_>>().join("-");
+        let add = |all: &mut Vec<FontDef>, mut f: FontDef| {
+            if f.size > 0.0 && dir.join(&f.file).is_file() && !all.iter().any(|a| a.key == f.key) {
+                f.label = f.label.trim().to_string();
+                all.push(f);
+            }
+        };
+        if let Some(list) = std::fs::read_to_string(dir.join("fonts.json"))
+            .ok()
+            .and_then(|t| serde_json::from_str::<Vec<serde_json::Value>>(&t).ok())
+        {
+            for v in list {
+                let (Some(file), Some(size)) = (v["file"].as_str(), v["size"].as_f64()) else { continue };
+                let stem = Path::new(file).file_stem().and_then(|s| s.to_str()).unwrap_or(file);
+                let label = v["label"].as_str().unwrap_or(stem).to_string();
+                let key = v["name"].as_str().map(str::to_string).unwrap_or_else(|| slug(&format!("{stem} {size}")));
+                add(&mut all, FontDef { key, file: file.into(), size: size as f32, label });
+            }
+        }
+        let mut files: Vec<String> = std::fs::read_dir(&dir)
+            .map(|rd| rd.filter_map(|e| e.ok()?.file_name().into_string().ok()).collect())
+            .unwrap_or_default();
+        files.sort();
+        for file in files {
+            let lower = file.to_lowercase();
+            let Some(stem) = lower.strip_suffix(".ttf").or_else(|| lower.strip_suffix(".otf")).map(|_| &file[..file.len() - 4]) else {
+                continue;
+            };
+            let Some((name, size)) = stem.rsplit_once('@') else { continue };
+            let Ok(size) = size.trim().parse::<f32>() else { continue };
+            let label = name.replace(['_', '-'], " ");
+            add(&mut all, FontDef { key: slug(&format!("{name} {size}")), file: file.clone(), size, label });
+        }
+        all
+    })
+}
 
 /// One font at one pixel size.
 pub struct Face {
@@ -111,8 +167,9 @@ pub struct Text {
 impl Text {
     /// Primary pixel font plus fallbacks for characters it lacks (CJK, Hangul, symbols).
     pub fn new(fonts_dir: &Path, name: &str) -> Text {
-        let (_, file, size, _) = FONTS.iter().find(|f| f.0 == name).copied().unwrap_or(FONTS[0]);
-        let mut primary = Face::load(&fonts_dir.join(file), size);
+        let all = fonts();
+        let def = all.iter().find(|f| f.key == name).unwrap_or(&all[0]);
+        let mut primary = Face::load(&fonts_dir.join(&def.file), def.size);
         let win = Path::new("C:/Windows/Fonts");
         // Unifont first: ab_glyph only draws outlines, and SimSun's outlines break up at 12 px
         // (FreeType would use SimSun's embedded bitmaps). Unifont also covers Hangul.

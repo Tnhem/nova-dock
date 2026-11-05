@@ -80,6 +80,20 @@ Pick a font in the tray menu (*Font*), or in Settings. Each font is drawn at the
 - Chinese, Japanese and Korean characters in song titles fall back to Unifont automatically.
 - Font licences are in [`fonts/LICENSES.md`](fonts/LICENSES.md).
 
+### Adding your own fonts
+Drop a `.ttf` or `.otf` into `fonts/` and restart nova-dock; it then shows up in the tray menu and in Settings. There are two ways to tell it the pixel size:
+- **In the file name:** put `@` and the size before the extension, e.g. `My Font@12.ttf`. Underscores and dashes in the name become spaces in the menu.
+- **In `fonts/fonts.json`**, which also lets you use a file more than once or pick the menu label:
+  ```json
+  [
+    {"file": "Monocraft.ttf", "size": 27, "label": "Minecraft huge"},
+    {"file": "MyFont.ttf", "size": 10, "name": "myfont", "label": "My font"}
+  ]
+  ```
+  `name` (the value for `font` in `config.json`) and `label` are optional.
+
+Use the size the font was designed for, or a whole multiple of it. That's usually given on the font's download page. Any other size lands between pixels and looks blurry or uneven on the 1-bit screen.
+
 ## System sensors
 | Value | Where it comes from |
 |---|---|
@@ -108,7 +122,7 @@ The **pioneer** page and visualizer style play `.lkd` animations from old Pionee
 - `auto_music`: shows the music page while sound is playing
 - `brightness`: 1–10
 - `clock_24h`: 24-hour clock on or off
-- `font`: `pixel-operator`, `minecraft`, `minecraft-large`, `press-start`, `silkscreen` or `unifont`
+- `font`: `pixel-operator`, `minecraft`, `minecraft-large`, `press-start`, `silkscreen`, `unifont`, or the name of a font you added
 - `clock_font`: `classic` (Bahnschrift) or `pixel` (the chosen font, scaled up)
 - `clock_seconds_bar`: the thin line under the clock that fills up over each minute
 - `visualizer`: `auto` or one style name

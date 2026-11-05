@@ -93,8 +93,8 @@ fn preview(out: &str) {
         fake.wave[x] = (x as f32 * 0.15).sin() * 0.7;
     }
     let mut tiles: Vec<Canvas> = vec![];
-    for (font, ..) in text::FONTS {
-        let text = text::Text::new(&dir.join("fonts"), font);
+    for font in text::fonts() {
+        let text = text::Text::new(&dir.join("fonts"), &font.key);
         for (page, title, artist, clock_font) in [
             ("clock", "", "", "classic"),
             ("clock", "", "", "pixel"),

@@ -4,7 +4,7 @@
 use crate::app::Shared;
 use crate::canvas::{H, W};
 use crate::config;
-use crate::text::FONTS;
+use crate::text::fonts;
 use crate::viz::STYLES;
 use serde_json::{json, Value};
 use std::collections::HashMap;
@@ -252,8 +252,8 @@ fn build_menu(shared: &Shared) -> anyhow::Result<(Menu, TrayMenu)> {
         clip.append(sub)?;
     }
     let font = Submenu::new("Font", true);
-    for (key, _, _, label) in FONTS {
-        font.append(&m.radio(label, "font", json!(key)))?;
+    for f in fonts() {
+        font.append(&m.radio(&f.label, "font", json!(f.key)))?;
     }
     let clock = Submenu::new("Big clock", true);
     clock.append(&m.radio("Classic", "clock_font", json!("classic")))?;
