@@ -3,6 +3,11 @@
 Custom screens for the **SteelSeries Arctis Nova Pro** base station OLED (128×64, 1-bit), written in Rust.
 It talks to the dock directly over USB HID, so SteelSeries GG is not needed. It runs in the system tray and uses less than 1% of one CPU core.
 
+## Download
+Get **nova-dock-…-windows-x64.zip** from the [latest release](https://github.com/Tnhem/nova-dock/releases/latest), extract it anywhere and run `nova-dock.exe`. Keep the exe next to the `fonts` folder.
+
+The exe isn't code-signed, so Windows SmartScreen may warn on first run (*More info → Run anyway*).
+
 ## Pages
 - **clock**: large time, a seconds line, the date and the headset battery
 - **system**: a table of rows with a thin usage bar under each, plus network speeds
