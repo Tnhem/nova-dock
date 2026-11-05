@@ -1,0 +1,9 @@
+# Only the Rust version is published; everything else in this folder stays local.
+/*
+!/.gitignore
+!/README.md
+!/rust/
+!/fonts/
+
+# Rust build output
+/rust/target/

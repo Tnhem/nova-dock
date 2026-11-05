@@ -1,0 +1,47 @@
+[package]
+name = "nova-dock"
+version = "0.1.0"
+edition = "2021"
+description = "Custom screens for the SteelSeries Arctis Nova Pro base station OLED"
+
+[dependencies]
+ab_glyph = "0.2"
+anyhow = "1"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+cpal = "0.15"
+eframe = { version = "0.31", default-features = false, features = ["default_fonts", "glow"] }
+fastrand = "2"
+flate2 = "1"
+hidapi = "2.6"
+libloading = "0.8"
+realfft = "3"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+tar = "0.4"
+tray-icon = "0.21"
+winreg = "0.55"
+windows = { version = "0.61", features = [
+    "Foundation",
+    "Media_Control",
+    "Win32_Foundation",
+    "Win32_NetworkManagement_IpHelper",
+    "Win32_NetworkManagement_Ndis",
+    "Win32_Networking_WinSock",
+    "Win32_Security",
+    "Win32_System_Com",
+    "Win32_System_Console",
+    "Win32_System_Memory",
+    "Win32_System_Performance",
+    "Win32_System_SystemInformation",
+    "Win32_System_Threading",
+    "Win32_UI_Input_KeyboardAndMouse",
+    "Win32_UI_Shell",
+    "Win32_UI_WindowsAndMessaging",
+] }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 4
+strip = true
+panic = "abort"
